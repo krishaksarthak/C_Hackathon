@@ -1,3 +1,5 @@
 *.exe
 /testcases
 run_tests.ps1
+cmake-build
+build/
