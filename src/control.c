@@ -33,10 +33,8 @@ static void check_temperature(const VehicleInput *input, FaultStatus *faults)
     }
 }
 
-static void check_gear(const VehicleInput *input, FaultStatus *faults)
-{
-    if (!input->gear_valid)
-    {
+static void check_gear(const VehicleInput *input, FaultStatus *faults){
+    if (!input->gear_valid){
         set_fault(faults, FAULT_BIT_INVALID_GEAR);
         char detail[64];
         snprintf(detail, sizeof(detail), "Gear value out of range");
@@ -48,10 +46,8 @@ static void check_gear(const VehicleInput *input, FaultStatus *faults)
     }
 }
 
-static void check_overspeed(const VehicleInput *input, FaultStatus *faults)
-{
-    if (input->speed > OVERSPEED_THRESHOLD)
-    {
+static void check_overspeed(const VehicleInput *input, FaultStatus *faults){
+    if (input->speed > OVERSPEED_THRESHOLD){
         set_fault(faults, FAULT_BIT_OVERSPEED);
         char detail[64];
         snprintf(detail, sizeof(detail), "Speed %d km/h exceeds limit %d km/h",
@@ -64,10 +60,7 @@ static void check_overspeed(const VehicleInput *input, FaultStatus *faults)
     }
 }
 
-void run_control_checks(const VehicleInput *input,
-                        VehicleStatus      *status,
-                        FaultStatus        *faults)
-{
+void run_control_checks(const VehicleInput *input, VehicleStatus *status,FaultStatus *faults){
     (void)status;
 
     check_temperature(input, faults);

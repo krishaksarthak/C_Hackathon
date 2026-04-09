@@ -1,8 +1,14 @@
+/*
+* The Include Guard, prevents "redefinition" errors.
+*/
 #ifndef TYPES_H
 #define TYPES_H
+/*
+* This brings in fixed-width integer types
+*/
+#include <stdint.h> 
 
-#include <stdint.h>
-
+// These are the hardware limits of the sensors.
 #define MAX_SPEED        200
 #define MIN_SPEED        0
 #define MAX_TEMP         150
@@ -10,10 +16,14 @@
 #define MAX_GEAR         5
 #define MIN_GEAR         0
 
+// These are logic thresholds
 #define OVERSPEED_THRESHOLD     120
 #define TEMP_CRITICAL_THRESHOLD 110
 #define TEMP_HIGH_THRESHOLD     95
 
+/*
+* The fault must occur in 3 consecutive cycles before it's considered persistent. 
+*/
 #define PERSISTENT_FAULT_LIMIT  3
 
 typedef enum{
@@ -21,15 +31,21 @@ typedef enum{
     MODE_ACC,
     MODE_IGNITION_ON,
     MODE_FAULT,
-    MODE_COUNT      
+    MODE_COUNT     // This is always equals the total number of valid modes. 
 } VehicleMode;
 
+/*
+* Three states representing overall vehicle health.
+*/
 typedef enum{
     STATE_NORMAL = 0,
     STATE_DEGRADED,
     STATE_SAFE
 } SystemState;
 
+/*
+* Each value here is a bit position, not a value itself. This enum describes where each fault lives inside a 32-bit integer.
+*/
 typedef enum{
     FAULT_BIT_OVERSPEED     = 0,   
     FAULT_BIT_OVERTEMP      = 1,   
@@ -38,16 +54,23 @@ typedef enum{
     FAULT_BIT_COUNT         = 4  
 } FaultBit;
 
-#define FAULT_OVERSPEED     (1U << FAULT_BIT_OVERSPEED)
-#define FAULT_OVERTEMP      (1U << FAULT_BIT_OVERTEMP)
-#define FAULT_INVALID_GEAR  (1U << FAULT_BIT_INVALID_GEAR)
-#define FAULT_INVALID_MODE  (1U << FAULT_BIT_INVALID_MODE)
+/*
+* 1U << N means shift the number 1 left by N positions, So each fault gets its own unique bit in a 32-bit integer. The entire fault state of the vehicle fits in one integer
+*/
+#define FAULT_OVERSPEED     (1U << FAULT_BIT_OVERSPEED)   // 0b0001
+#define FAULT_OVERTEMP      (1U << FAULT_BIT_OVERTEMP)   // // 0b0010
+#define FAULT_INVALID_GEAR  (1U << FAULT_BIT_INVALID_GEAR) // 0b0100
+#define FAULT_INVALID_MODE  (1U << FAULT_BIT_INVALID_MODE) // 0b1000
 
+//active_flags = 0b0101 = FAULT_OVERSPEED + FAULT_INVALID_GEAR both are active
 
+/*
+* Insert comment here
+*/
 typedef struct{
-    int     speed;          
-    int     temperature;    
-    int     gear;           
+    uint16_t speed;            // 0 to 200 (Unsigned 16-bit)
+    int16_t  temperature;      // -40 to 150 (Signed 16-bit)
+    uint8_t  gear;             // 0 to 5 (Unsigned 8-bit)        
     VehicleMode requested_mode;
 
     uint8_t speed_valid;
@@ -56,18 +79,21 @@ typedef struct{
     uint8_t mode_valid;
 } VehicleInput;
 
+// This is the runtime memory of the ECU — everything the system needs to remember between cycles.
 typedef struct{
     VehicleMode current_mode;
     VehicleMode previous_mode;
     SystemState system_state;
     SystemState previous_state;
-    uint32_t    cycle_count;
+    uint32_t    cycle_count;   // At 1 cycle per millisecond (typical ECU rate)
 
-    int         last_valid_speed;
-    int         last_valid_temp;
-    int         last_valid_gear;
+    // Fallback values - When a sensor reading is invalid, the system uses these instead of crashing or using garbage.
+    uint16_t last_valid_speed; 
+    int16_t last_valid_temp;  
+    uint8_t last_valid_gear;  
 } VehicleStatus;
 
+// This struct manages all fault information
 typedef struct{
     uint32_t active_flags;                    
     uint32_t persistent_flags;                  
