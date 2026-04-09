@@ -7,12 +7,7 @@ void read_inputs(VehicleInput *input){
 
     printf("\nEnter inputs (speed temp gear mode [0=OFF,1=ACC,2=IGN,3=FAULT] ): ");
 
-    if (scanf("%d %d %d %d",
-              &input->speed,
-              &input->temperature,
-              &input->gear,
-              &mode_raw) != 4)
-    {
+    if (scanf("%d %d %d %d", &input->speed, &input->temperature, &input->gear, &mode_raw) != 4){
         log_warning("read_inputs: failed to read inputs, preserving previous values");
         return;
     }

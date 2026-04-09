@@ -1,0 +1,58 @@
+[INFO] System initialised - Mode: OFF, State: NORMAL
+❇️ ECU CYCLE #1     SUMMARY
+-----
+INPUTS
+Speed :   40 km/h [OK ]
+Temperature :   80 deg C [OK ] 
+Gear :    1 [OK ] 
+Mode Req. : OFF          [OK ] 
+-----
+STATUS
+Mode : OFF         
+Sys State : NORMAL    
+-----
+FAULTS (active=0x00  persistent=0x00)
+OVERSPEED        cnt=0    active=no  persist=no 
+OVERTEMPERATURE  cnt=0    active=no  persist=no 
+INVALID_GEAR     cnt=0    active=no  persist=no 
+INVALID_MODE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+[INFO] MODE   : Transition OFF -> ACC
+❇️ ECU CYCLE #2     SUMMARY
+-----
+INPUTS
+Speed :   40 km/h [OK ]
+Temperature :   80 deg C [OK ] 
+Gear :    1 [OK ] 
+Mode Req. : ACC          [OK ] 
+-----
+STATUS
+Mode : ACC         
+Sys State : NORMAL    
+-----
+FAULTS (active=0x00  persistent=0x00)
+OVERSPEED        cnt=0    active=no  persist=no 
+OVERTEMPERATURE  cnt=0    active=no  persist=no 
+INVALID_GEAR     cnt=0    active=no  persist=no 
+INVALID_MODE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+[INFO] MODE   : Transition ACC -> IGNITION_ON
+❇️ ECU CYCLE #3     SUMMARY
+-----
+INPUTS
+Speed :   40 km/h [OK ]
+Temperature :   80 deg C [OK ] 
+Gear :    1 [OK ] 
+Mode Req. : IGNITION_ON  [OK ] 
+-----
+STATUS
+Mode : IGNITION_ON 
+Sys State : NORMAL    
+-----
+FAULTS (active=0x00  persistent=0x00)
+OVERSPEED        cnt=0    active=no  persist=no 
+OVERTEMPERATURE  cnt=0    active=no  persist=no 
+INVALID_GEAR     cnt=0    active=no  persist=no 
+INVALID_MODE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+[INFO] Quit sentinel received - shutting down.

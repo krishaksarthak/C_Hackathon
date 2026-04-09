@@ -14,17 +14,20 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status, c
 
     int i;
 
-    fprintf(log_file, "ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
+    fprintf(log_file, "❇️ ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
 
+    fprintf(log_file, "-----\n");
     fprintf(log_file, "INPUTS\n");
     fprintf(log_file, "Speed : %4d km/h [%s]\n", input->speed, input->speed_valid ? "OK " : "ERR");
     fprintf(log_file, "Temperature : %4d deg C [%s] \n", input->temperature, input->temp_valid ? "OK " : "ERR");
     fprintf(log_file, "Gear : %4d [%s] \n", input->gear, input->gear_valid ? "OK " : "ERR");
     fprintf(log_file, "Mode Req. : %-12s [%s] \n", mode_to_string(input->requested_mode), input->mode_valid ? "OK " : "ERR");
-
+    fprintf(log_file, "-----\n");
+    
     fprintf(log_file, "STATUS\n");
     fprintf(log_file, "Mode : %-12s\n", mode_to_string(status->current_mode));
     fprintf(log_file, "Sys State : %-10s\n", state_to_string(status->system_state));
+    fprintf(log_file, "-----\n");
 
     fprintf(log_file, "FAULTS (active=0x%02X  persistent=0x%02X)\n", faults->active_flags, faults->persistent_flags);
 

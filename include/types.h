@@ -68,9 +68,9 @@ typedef enum{
 * Insert comment here
 */
 typedef struct{
-    uint16_t speed;            // 0 to 200 (Unsigned 16-bit)
+    int16_t speed;            // 0 to 200 (Unsigned 16-bit)
     int16_t  temperature;      // -40 to 150 (Signed 16-bit)
-    uint8_t  gear;             // 0 to 5 (Unsigned 8-bit)        
+    int8_t  gear;             // 0 to 5 (Unsigned 8-bit)        
     VehicleMode requested_mode;
 
     uint8_t speed_valid;
@@ -88,9 +88,9 @@ typedef struct{
     uint32_t    cycle_count;   // At 1 cycle per millisecond (typical ECU rate)
 
     // Fallback values - When a sensor reading is invalid, the system uses these instead of crashing or using garbage.
-    uint16_t last_valid_speed; 
+    int16_t last_valid_speed; 
     int16_t last_valid_temp;  
-    uint8_t last_valid_gear;  
+    int8_t last_valid_gear;  
 } VehicleStatus;
 
 // This struct manages all fault information
