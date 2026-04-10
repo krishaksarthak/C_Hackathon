@@ -2,6 +2,9 @@
 #include "fault.h"
 #include "log.h"
 
+/*
+* Rows = current mode, columns = requested mode. 1 means legal, 0 means illegal.
+*/
 static const int transition_table[MODE_COUNT][MODE_COUNT] = {
     /*             OFF  ACC  IGN  FAULT */
     /* OFF   */  {  1,   1,   0,   1  },
@@ -10,12 +13,18 @@ static const int transition_table[MODE_COUNT][MODE_COUNT] = {
     /* FAULT */  {  1,   0,   0,   1  },
 };
 
+/*
+* Returns 1 if the transition current → requested is allowed, 0 otherwise.
+*/
 int is_mode_transition_legal(VehicleMode current, VehicleMode requested){
     if (current  >= MODE_COUNT) return 0;
     if (requested >= MODE_COUNT) return 0;
     return transition_table[current][requested];
 }
 
+/*
+* Updates 
+*/
 void update_mode(VehicleStatus *status, const VehicleInput *input, FaultStatus *faults){
     VehicleMode requested = input->requested_mode;
     VehicleMode current   = status->current_mode;
@@ -83,6 +92,8 @@ void update_mode(VehicleStatus *status, const VehicleInput *input, FaultStatus *
     status->previous_mode = current;
     status->current_mode  = requested;
 }
+
+
 
 const char *mode_to_string(VehicleMode mode){
     switch (mode){

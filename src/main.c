@@ -83,16 +83,16 @@ int main(void) {
         read_inputs(&input);
 
         /*
-        * Quit sentinel - if all inputs are -1, we exit the loop and end the program. This allows for graceful shutdown and ensures the log file is properly closed.
-        */
+         * Exit Condition - if all inputs are -1, we exit the loop and end the program. This allows for graceful shutdown and ensures the log file is properly closed.
+         */
         if (input.speed == -1 && input.temperature == -1 && input.gear  == -1 && (int)input.requested_mode == -1) {
             log_info("Quit sentinel received - shutting down.");
             break; // Exiting the while loop
         }
 
         /*
-        * The Fixed Scheduler Order
-        */
+         * The Fixed Scheduler Order
+         */
         validate_inputs(&input, &status);
         update_mode(&status, &input, &faults);
         run_control_checks(&input, &status, &faults);
@@ -100,7 +100,7 @@ int main(void) {
         evaluate_system_state(&status, &faults);
         log_cycle_summary(&input, &status, &faults);
 
-        printf("✅ Cycle #%u complete. Log entry added to logs/logs.txt\n", status.cycle_count);
+        printf("-> Cycle #%u complete. Log entry added to logs/logs.txt\n", status.cycle_count);
     }
 
     /*
