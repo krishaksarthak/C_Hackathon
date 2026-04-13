@@ -196,26 +196,35 @@ Output goes to both `stdout` (console) and `logs/logs.txt` (file) simultaneously
 
 ## 3. State Transition Logic
 
-```
-                    ┌─────────────────────────────────────┐
-                    │             STATE_NORMAL             │
-                    │         (no active faults)           │
-                    └──────────────┬──────────────────────┘
-                                   │ any fault becomes active
-                                   ▼
-                    ┌─────────────────────────────────────┐
-                    │            STATE_DEGRADED            │
-                    │   (≥1 active fault OR ≥1 persistent) │
-                    └──────────────┬──────────────────────┘
-                                   │ ≥2 critical persistent faults
-                                   ▼
-                    ┌─────────────────────────────────────┐
-                    │             STATE_SAFE               │
-                    │  (latching — manual reset required)  │
-                    └─────────────────────────────────────┘
+The state manager (`state.c`) reads all active and persistent fault bits each cycle and computes:
 
-  SAFE → NORMAL only possible after: mode reset to OFF + all faults cleared
 ```
+if (count(persistent CRITICAL faults) >= 2)
+    → STATE_SAFE
+
+else if (count(active faults) > 0 OR count(persistent faults) > 0)
+    → STATE_DEGRADED (unless already SAFE)
+
+else
+    → STATE_NORMAL (unless already SAFE)
+```
+
+**Critical Faults**: `FAULT_BIT_OVERTEMP` and `FAULT_BIT_OVERSPEED` only.
+
+**STATE_SAFE is latching:**
+```
+STATE_NORMAL  ──────────────────┐
+   │                            │
+   ▼                            │ state transition rules
+STATE_DEGRADED ─────────────────►
+   │
+   ▼
+STATE_SAFE  (NO auto-exit)
+   │
+   └──► Only external action: manual mode reset to OFF + fault clearing
+```
+
+Recovery from SAFE is manual only — the logic never auto-recovers.
 
 ---
 
