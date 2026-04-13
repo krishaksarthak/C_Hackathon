@@ -1,20 +1,80 @@
-[INFO] System initialised - Mode: OFF, State: NORMAL
-[WARN] read_inputs: failed to read inputs, preserving previous values
-❇️ ECU CYCLE #1     SUMMARY
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+
+[CYCLE: 1]
+[INPUT] Mode=OFF          Speed=40   Temp=80   Gear=0
+❇️  ECU CYCLE #1     SUMMARY
 -----
 INPUTS
-Speed :    0 km/h [OK ]
-Temperature :   20 deg C [OK ] 
-Gear :    0 [OK ] 
-Mode Req. : OFF          [OK ] 
+Speed       :   40 km/h [OK ]
+Temperature :   80 deg C [OK ]
+Gear        :    0       [OK ]
+Mode Req.   : OFF          [OK ]
 -----
 STATUS
-Mode : OFF         
-Sys State : NORMAL    
+Mode        : OFF         
+Sys State   : NORMAL    
 -----
-FAULTS (active=0x00  persistent=0x00)
+FAULTS (active=0x00 persistent=0x00)
 OVERSPEED        cnt=0    active=no  persist=no 
 OVERTEMPERATURE  cnt=0    active=no  persist=no 
 INVALID_GEAR     cnt=0    active=no  persist=no 
 INVALID_MODE     cnt=0    active=no  persist=no 
 --------------------------------------------------
+
+[CYCLE: 2]
+[INPUT] Mode=ACC          Speed=130  Temp=120  Gear=2
+[INFO]  MODE  : Transition OFF -> ACC
+[FAULT] OVERTEMPERATURE  : CRITICAL OVERHEAT
+[FAULT] OVERSPEED        : Speed 130 km/h exceeds limit 120 km/h [MAJOR]
+[STATE] SYSTEM : NORMAL -> DEGRADED | Reason: active fault(s) present
+[FAULT REPORT] 2 fault(s) active this cycle (listed highest -> lowest priority)
+[PRIMARY FAULT] OVERTEMPERATURE  [CRITICAL]
+[FAULT]         OVERSPEED        [MAJOR]
+❇️  ECU CYCLE #2     SUMMARY
+-----
+INPUTS
+Speed       :  130 km/h [OK ]
+Temperature :  120 deg C [OK ]
+Gear        :    2       [OK ]
+Mode Req.   : ACC          [OK ]
+-----
+STATUS
+Mode        : ACC         
+Sys State   : DEGRADED  
+-----
+FAULTS (active=0x03 persistent=0x00)
+OVERSPEED        cnt=1    active=YES persist=no 
+OVERTEMPERATURE  cnt=1    active=YES persist=no 
+INVALID_GEAR     cnt=0    active=no  persist=no 
+INVALID_MODE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+
+[CYCLE: 3]
+[INPUT] Mode=IGNITION_ON  Speed=135  Temp=141  Gear=9
+[INFO]  MODE  : Transition ACC -> IGNITION_ON
+[FAULT] OVERTEMPERATURE  : CRITICAL OVERHEAT
+[FAULT] INVALID_GEAR     : Gear value out of range
+[FAULT] OVERSPEED        : Speed 135 km/h exceeds limit 120 km/h [MAJOR]
+[FAULT REPORT] 3 fault(s) active this cycle (listed highest -> lowest priority)
+[PRIMARY FAULT] OVERTEMPERATURE  [CRITICAL]
+[FAULT]         INVALID_GEAR     [MAJOR]
+[FAULT]         OVERSPEED        [MAJOR]
+❇️  ECU CYCLE #3     SUMMARY
+-----
+INPUTS
+Speed       :  135 km/h [OK ]
+Temperature :  141 deg C [OK ]
+Gear        :    9       [ERR]
+Mode Req.   : IGNITION_ON  [OK ]
+-----
+STATUS
+Mode        : IGNITION_ON 
+Sys State   : DEGRADED  
+-----
+FAULTS (active=0x07 persistent=0x00)
+OVERSPEED        cnt=2    active=YES persist=no 
+OVERTEMPERATURE  cnt=2    active=YES persist=no 
+INVALID_GEAR     cnt=1    active=YES persist=no 
+INVALID_MODE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+[INFO]  Quit sentinel received — shutting down.

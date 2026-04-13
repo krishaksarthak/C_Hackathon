@@ -12,9 +12,9 @@ void set_fault(FaultStatus *faults, FaultBit bit){
 void clear_fault(FaultStatus *faults, FaultBit bit){
     if (bit >= FAULT_BIT_COUNT) return;
 
-    faults->active_flags      &= ~(1U << bit);
-    faults->consecutive[bit]   = 0;
-    faults->persistent_flags  &= ~(1U << bit);
+    faults->active_flags &= ~(1U << bit);
+    faults->consecutive[bit] = 0;
+    faults->persistent_flags &= ~(1U << bit);
 }
 
 void increment_fault_counter(FaultStatus *faults, FaultBit bit){
@@ -26,6 +26,11 @@ void update_fault_status(FaultStatus *faults){
     int i;
     for (i = 0; i < FAULT_BIT_COUNT; i++)
     {
+        /*
+         * Persistent = same fault in N *consecutive* cycles.
+         * consecutive[i] is reset to 0 in clear_fault(), so this
+         * correctly tracks unbroken runs, not total occurrences.
+         */
         if (faults->consecutive[i] >= PERSISTENT_FAULT_LIMIT)
         {
             faults->persistent_flags |= (1U << i);

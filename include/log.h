@@ -11,4 +11,11 @@ void log_fault_event(FaultBit bit, const char *detail);
 void log_warning(const char *message);
 void log_info(const char *message);
 
+// logs all active faults in priority order, marking the primary fault
+void log_faults_prioritised(const FaultStatus *faults,
+                             const VehicleInput *input);
+
+// Structured cycle header printed to stdout
+void print_cycle_header(uint32_t cycle, const VehicleInput *input);
+
 #endif

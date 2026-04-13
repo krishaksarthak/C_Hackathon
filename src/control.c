@@ -4,16 +4,16 @@
 #include <stdio.h>
 
 /* =========================================================
-   Priority order (highest to lowest):
-     1. Critical Overheat  (FAULT_BIT_OVERTEMP   when temp > 110)
-     2. Invalid Gear       (FAULT_BIT_INVALID_GEAR)
-     3. Overspeed          (FAULT_BIT_OVERSPEED)
-     4. High Temperature   (FAULT_BIT_OVERTEMP   when 95 < temp <= 110)
-
-   All faults that apply in a cycle are SET; the priority order
-   only governs which one is printed first / treated as primary
-   in multi-fault scenarios.
-   ========================================================= */
+ * Multi-fault Priority Order (highest → lowest):
+ *   1. Critical Overheat  (temp > TEMP_CRITICAL_THRESHOLD)
+ *   2. Invalid Mode / Gear
+ *   3. Overspeed          (major fault, not critical)
+ *   4. High Temperature   (temp > TEMP_HIGH_THRESHOLD)
+ *
+ * ALL faults that apply in a cycle are SET and logged.
+ * The priority order determines which is marked [PRIMARY FAULT]
+ * when more than one fault fires in the same cycle.
+ * ========================================================= */
 
 static void check_temperature(const VehicleInput *input, FaultStatus *faults)
 {
@@ -33,8 +33,10 @@ static void check_temperature(const VehicleInput *input, FaultStatus *faults)
     }
 }
 
-static void check_gear(const VehicleInput *input, FaultStatus *faults){
-    if (!input->gear_valid){
+static void check_gear(const VehicleInput *input, FaultStatus *faults)
+{
+    if (!input->gear_valid)
+    {
         set_fault(faults, FAULT_BIT_INVALID_GEAR);
         char detail[64];
         snprintf(detail, sizeof(detail), "Gear value out of range");
@@ -46,11 +48,14 @@ static void check_gear(const VehicleInput *input, FaultStatus *faults){
     }
 }
 
-static void check_overspeed(const VehicleInput *input, FaultStatus *faults){
-    if (input->speed > OVERSPEED_THRESHOLD){
+static void check_overspeed(const VehicleInput *input, FaultStatus *faults)
+{
+    if (input->speed > OVERSPEED_THRESHOLD)
+    {
         set_fault(faults, FAULT_BIT_OVERSPEED);
         char detail[64];
-        snprintf(detail, sizeof(detail), "Speed %d km/h exceeds limit %d km/h",
+        snprintf(detail, sizeof(detail),
+                 "Speed %d km/h exceeds limit %d km/h [MAJOR]",
                  input->speed, OVERSPEED_THRESHOLD);
         log_fault_event(FAULT_BIT_OVERSPEED, detail);
     }
@@ -60,11 +65,22 @@ static void check_overspeed(const VehicleInput *input, FaultStatus *faults){
     }
 }
 
-void run_control_checks(const VehicleInput *input, VehicleStatus *status,FaultStatus *faults){
+
+void run_control_checks(const VehicleInput *input, VehicleStatus *status,
+                        FaultStatus *faults)
+{
     (void)status;
 
-    check_temperature(input, faults);
-    check_gear(input, faults);
-    check_overspeed(input, faults);
-    /* Priority 4 (High Temperature) is handled inside check_temperature */
+    /*
+     * Run every check so that all faults are SET this cycle.
+     * Individual helpers call log_fault_event() for their own detail lines.
+     * After all checks, log_faults_prioritised() (called from log_cycle_summary
+     * via main) will emit the ordered fault list + [PRIMARY FAULT] marker.
+     *
+     * Priority 4 (High Temperature) is handled inside check_temperature.
+     */
+    check_temperature(input, faults);   /* covers P1 and P4 */
+    check_gear(input, faults);          /* P2 (gear half)   */
+    check_overspeed(input, faults);     /* P3               */
+    /* P2 (mode half) is handled in mode.c / update_mode()  */
 }
