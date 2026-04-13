@@ -2,7 +2,7 @@
  * File:        main.c
  * Author:      C10 Team
  * Date:        09/04/2026
- * Description: Main entry point — Vehicle ECU Simulator
+ * Description: Main entry point of Vehicle ECU Simulator
  *
  * Log behaviour:
  *   One log file per program run, named with the session start timestamp.
