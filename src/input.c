@@ -2,6 +2,9 @@
 #include "input.h"
 #include "log.h"
 
+// Reads one integer from stdin with a prompt.
+// Returns 1 on success, 0 on failure.
+
 static int read_int(const char *prompt, int *out)
 {
     printf("%s", prompt);
@@ -9,6 +12,7 @@ static int read_int(const char *prompt, int *out)
     return (scanf("%d", out) == 1);
 }
 
+// Reads raw values from the user, one field per line.
 void read_inputs(VehicleInput *input)
 {
     int mode_raw  = 0;
@@ -18,10 +22,20 @@ void read_inputs(VehicleInput *input)
 
     printf("\n");
 
-    if (!read_int("  Mode  (0=OFF 1=ACC 2=IGN 3=FAULT, -1 to quit): ", &mode_raw))  goto fail;
-    if (!read_int("  Speed (0 - 200 km/h, -1 to quit)             : ", &speed_raw)) goto fail;
-    if (!read_int("  Temp  (-40 to 150 deg C, -1 to quit)         : ", &temp_raw))  goto fail;
-    if (!read_int("  Gear  (0-5,   -1 to quit)                    : ", &gear_raw))  goto fail;
+    if (!read_int("  Mode  (0=OFF 1=ACC 2=IGN 3=FAULT, -1 to quit): ", &mode_raw)) goto fail;
+
+    if (mode_raw == -1)
+    {
+        input->requested_mode = (VehicleMode)-1;
+        input->speed          = -1;
+        input->temperature    = -1;
+        input->gear           = -1;
+        return;
+    }
+
+    if (!read_int("  Speed (0-200 km/h)                            : ", &speed_raw)) goto fail;
+    if (!read_int("  Temp  (-40 to 150 deg C)                      : ", &temp_raw))  goto fail;
+    if (!read_int("  Gear  (0-5)                                   : ", &gear_raw))  goto fail;
 
     input->requested_mode = (VehicleMode)mode_raw;
     input->speed          = (int16_t)speed_raw;
@@ -58,7 +72,8 @@ void validate_inputs(VehicleInput *input, VehicleStatus *status)
         status->last_valid_gear = input->gear;
     } else {
         input->gear_valid = 0;
-        // Do NOT restore last good gear — invalid gear must reach control layer so it can raise FAULT_BIT_INVALID_GEAR.
+        /* Do NOT restore last good gear — invalid gear must reach control layer
+           so it can raise FAULT_BIT_INVALID_GEAR. */
     }
 
     if (input->requested_mode >= MODE_OFF && input->requested_mode < MODE_COUNT) {

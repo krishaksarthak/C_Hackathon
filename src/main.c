@@ -2,22 +2,21 @@
  * File:        main.c
  * Author:      C10 Team
  * Date:        09/04/2026
- * Description: Main entry point of Vehicle ECU Simulator
- * Expected console output for that input (cycle 1):
- *   [CYCLE: 1]
- *   [INPUT] Mode=IGNITION_ON  Speed=130 Temp=115 Gear=4
- *   [FAULT] OVERTEMPERATURE : CRITICAL OVERHEAT
- *   [FAULT] OVERSPEED       : Speed 130 km/h exceeds limit 120 km/h [MAJOR]
- *   [PRIMARY FAULT] OVERTEMPERATURE [CRITICAL]
- *   [FAULT]         OVERSPEED       [MAJOR]
- *   [STATE CHANGE] NORMAL -> DEGRADED
+ * Description: Main entry point — Vehicle ECU Simulator
  *
- * Enter -1 -1 -1 -1 to quit.
+ * Log behaviour:
+ *   One log file per program run, named with the session start timestamp.
+ *   Format: logs/YYYY-MM-DD_HH-MM-SS.txt
+ *   All cycles in a run are written to the same file.
+ *   A new run always creates a new file — nothing is ever overwritten.
+ *
+ * Quit: enter -1 at the Mode prompt — no further prompts appear.
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "types.h"
 #include "input.h"
@@ -27,9 +26,12 @@
 #include "state.h"
 #include "log.h"
 
-
+/*
+ * Global file pointer — declared here, referenced via extern in log.c
+ */
 FILE *log_file = NULL;
 
+/* ── System initialisation ──────────────────────────────────────────────── */
 
 static void init_system(VehicleStatus *status, FaultStatus *faults)
 {
@@ -49,22 +51,34 @@ static void init_system(VehicleStatus *status, FaultStatus *faults)
     log_info("System initialised — Mode: OFF, State: NORMAL");
 }
 
+/* ── Entry point ────────────────────────────────────────────────────────── */
 
 int main(void)
 {
     VehicleInput  input  = {0};
     VehicleStatus status = {0};
     FaultStatus   faults = {0};
+    char          log_filename[80];
 
-    log_file = fopen("logs/logs.txt", "w");
-    if (log_file == NULL){
-        printf("ERROR: Could not open logs/logs.txt. "
-               "Please ensure the 'logs' folder exists.\n");
-        return 1;
+    /* ── Open one log file for the entire session ── */
+    {
+        time_t     now = time(NULL);
+        struct tm *t   = localtime(&now);
+        strftime(log_filename, sizeof(log_filename),
+                 "logs/%Y-%m-%d_%H-%M-%S.txt", t);
+
+        log_file = fopen(log_filename, "w");
+        if (log_file == NULL)
+        {
+            printf("ERROR: Could not open %s. "
+                   "Ensure the 'logs' folder exists.\n", log_filename);
+            return 1;
+        }
     }
 
     init_system(&status, &faults);
 
+    /* Safe defaults before the first real cycle */
     input.speed          = 0;
     input.temperature    = 20;
     input.gear           = 0;
@@ -74,33 +88,47 @@ int main(void)
     input.gear_valid     = 1;
     input.mode_valid     = 1;
 
-    printf("Vehicle ECU Simulator\n");
-    printf("____________________________________________________\n");
-    printf("Log file : logs/logs.txt\n");
-    printf("Enter each field when prompted. Type -1 to quit.\n");
-    printf("____________________________________________________\n");
+    printf("\n====================================================\n");
+    printf("  Vehicle ECU Simulator\n");
+    printf("====================================================\n");
+    printf("Log file : %s\n", log_filename);
+    printf("Enter each field when prompted.\n");
+    printf("Type -1 at the Mode prompt to quit.\n");
+    printf("====================================================\n\n");
 
-    while (1){
+    /* ── Main scheduler loop ── */
+    while (1)
+    {
         status.cycle_count++;
 
         printf("--- Cycle #%u ---\n", status.cycle_count);
         read_inputs(&input);
 
-        if (input.speed == -1 && input.temperature == -1 && input.gear  == -1 && (int)input.requested_mode == -1){
+        /* Quit sentinel — mode = -1 set by read_inputs() on early exit */
+        if ((int)input.requested_mode == -1)
+        {
             log_info("Quit sentinel received — shutting down.");
+            printf("Exiting. Goodbye.\n");
             break;
         }
 
+        /* ── Structured cycle header (stdout + log) ── */
         print_cycle_header(status.cycle_count, &input);
 
+        /* ── Fixed scheduler ── */
         validate_inputs(&input, &status);
         update_mode(&status, &input, &faults);
         run_control_checks(&input, &status, &faults);
         update_fault_status(&faults);
         evaluate_system_state(&status, &faults);
 
+        /*
+         * Multi-fault priority report — all active faults in descending
+         * priority order; highest-priority tagged as [PRIMARY FAULT].
+         */
         log_faults_prioritised(&faults, &input);
 
+        /* Full structured summary to log file */
         log_cycle_summary(&input, &status, &faults);
 
         printf("-> Cycle #%u done. State=%-10s Mode=%s\n\n",
@@ -109,8 +137,12 @@ int main(void)
                mode_to_string(status.current_mode));
     }
 
+    /* ── Close the session log file ── */
     if (log_file != NULL)
+    {
         fclose(log_file);
+        log_file = NULL;
+    }
 
     return 0;
 }
