@@ -72,8 +72,7 @@ void validate_inputs(VehicleInput *input, VehicleStatus *status)
         status->last_valid_gear = input->gear;
     } else {
         input->gear_valid = 0;
-        /* Do NOT restore last good gear — invalid gear must reach control layer
-           so it can raise FAULT_BIT_INVALID_GEAR. */
+        // Do NOT restore last good gear — invalid gear must reach control layer so it can raise FAULT_BIT_INVALID_GEAR.
     }
 
     if (input->requested_mode >= MODE_OFF && input->requested_mode < MODE_COUNT) {

@@ -38,13 +38,15 @@ void update_fault_status(FaultStatus *faults){
     }
 }
 
-const char *fault_to_string(FaultBit bit){
+const char *fault_to_string(FaultBit bit)
+{
     switch (bit)
     {
         case FAULT_BIT_OVERSPEED:    return "OVERSPEED";
-        case FAULT_BIT_OVERTEMP:     return "OVERTEMPERATURE";
+        case FAULT_BIT_OVERTEMP:     return "CRITICAL OVERHEAT";
         case FAULT_BIT_INVALID_GEAR: return "INVALID_GEAR";
         case FAULT_BIT_INVALID_MODE: return "INVALID_MODE";
+        case FAULT_BIT_HIGH_TEMP:    return "HIGH TEMPERATURE";
         default:                     return "UNKNOWN_FAULT";
     }
 }

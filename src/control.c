@@ -20,16 +20,19 @@ static void check_temperature(const VehicleInput *input, FaultStatus *faults)
     if (input->temperature > TEMP_CRITICAL_THRESHOLD)
     {
         set_fault(faults, FAULT_BIT_OVERTEMP);
+        clear_fault(faults, FAULT_BIT_HIGH_TEMP);   // mutually exclusive
         log_fault_event(FAULT_BIT_OVERTEMP, "CRITICAL OVERHEAT");
     }
     else if (input->temperature > TEMP_HIGH_THRESHOLD)
     {
-        set_fault(faults, FAULT_BIT_OVERTEMP);
-        log_fault_event(FAULT_BIT_OVERTEMP, "HIGH TEMPERATURE WARNING");
+        set_fault(faults, FAULT_BIT_HIGH_TEMP);
+        clear_fault(faults, FAULT_BIT_OVERTEMP);    // mutually exclusive
+        log_fault_event(FAULT_BIT_HIGH_TEMP, "HIGH TEMPERATURE WARNING");
     }
     else
     {
         clear_fault(faults, FAULT_BIT_OVERTEMP);
+        clear_fault(faults, FAULT_BIT_HIGH_TEMP);
     }
 }
 

@@ -8,9 +8,9 @@
  *   One log file per program run, named with the session start timestamp.
  *   Format: logs/YYYY-MM-DD_HH-MM-SS.txt
  *   All cycles in a run are written to the same file.
- *   A new run always creates a new file — nothing is ever overwritten.
+ *   A new run always creates a new file, nothing is ever overwritten.
  *
- * Quit: enter -1 at the Mode prompt — no further prompts appear.
+ * Quit: enter -1 at the Mode prompt, no further prompts appear.
  */
 
 #include <stdio.h>
@@ -26,12 +26,7 @@
 #include "state.h"
 #include "log.h"
 
-/*
- * Global file pointer — declared here, referenced via extern in log.c
- */
 FILE *log_file = NULL;
-
-/* ── System initialisation ──────────────────────────────────────────────── */
 
 static void init_system(VehicleStatus *status, FaultStatus *faults)
 {
@@ -51,7 +46,6 @@ static void init_system(VehicleStatus *status, FaultStatus *faults)
     log_info("System initialised — Mode: OFF, State: NORMAL");
 }
 
-/* ── Entry point ────────────────────────────────────────────────────────── */
 
 int main(void)
 {
@@ -60,7 +54,6 @@ int main(void)
     FaultStatus   faults = {0};
     char          log_filename[80];
 
-    /* ── Open one log file for the entire session ── */
     {
         time_t     now = time(NULL);
         struct tm *t   = localtime(&now);
@@ -78,7 +71,6 @@ int main(void)
 
     init_system(&status, &faults);
 
-    /* Safe defaults before the first real cycle */
     input.speed          = 0;
     input.temperature    = 20;
     input.gear           = 0;
@@ -88,15 +80,14 @@ int main(void)
     input.gear_valid     = 1;
     input.mode_valid     = 1;
 
-    printf("\n====================================================\n");
     printf("  Vehicle ECU Simulator\n");
-    printf("====================================================\n");
+    printf("####################################################\n");
     printf("Log file : %s\n", log_filename);
     printf("Enter each field when prompted.\n");
     printf("Type -1 at the Mode prompt to quit.\n");
-    printf("====================================================\n\n");
+    printf("####################################################\n");
 
-    /* ── Main scheduler loop ── */
+
     while (1)
     {
         status.cycle_count++;
@@ -104,31 +95,23 @@ int main(void)
         printf("--- Cycle #%u ---\n", status.cycle_count);
         read_inputs(&input);
 
-        /* Quit sentinel — mode = -1 set by read_inputs() on early exit */
         if ((int)input.requested_mode == -1)
         {
             log_info("Quit sentinel received — shutting down.");
-            printf("Exiting. Goodbye.\n");
+            printf("Exiting Program.\n");
             break;
         }
 
-        /* ── Structured cycle header (stdout + log) ── */
         print_cycle_header(status.cycle_count, &input);
 
-        /* ── Fixed scheduler ── */
         validate_inputs(&input, &status);
         update_mode(&status, &input, &faults);
         run_control_checks(&input, &status, &faults);
         update_fault_status(&faults);
         evaluate_system_state(&status, &faults);
 
-        /*
-         * Multi-fault priority report — all active faults in descending
-         * priority order; highest-priority tagged as [PRIMARY FAULT].
-         */
         log_faults_prioritised(&faults, &input);
 
-        /* Full structured summary to log file */
         log_cycle_summary(&input, &status, &faults);
 
         printf("-> Cycle #%u done. State=%-10s Mode=%s\n\n",
@@ -137,7 +120,6 @@ int main(void)
                mode_to_string(status.current_mode));
     }
 
-    /* ── Close the session log file ── */
     if (log_file != NULL)
     {
         fclose(log_file);

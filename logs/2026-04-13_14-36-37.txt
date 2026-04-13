@@ -1,0 +1,29 @@
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+
+[CYCLE: 1]
+[INPUT] Mode=OFF          Speed=80   Temp=100  Gear=3
+[FAULT] HIGH TEMPERATURE     : HIGH TEMPERATURE WARNING
+[STATE] SYSTEM : NORMAL -> DEGRADED | Reason: active fault(s) present
+-----
+[FAULT REPORT] 1 fault(s) active this cycle (listed highest -> lowest priority)
+[FAULT]         HIGH TEMPERATURE     [WARNING]
+❇️  ECU CYCLE #1     SUMMARY
+-----
+INPUTS
+Speed       :   80 km/h [OK ]
+Temperature :  100 deg C [OK ]
+Gear        :    3       [OK ]
+Mode Req.   : OFF          [OK ]
+-----
+STATUS
+Mode        : OFF         
+Sys State   : DEGRADED  
+-----
+FAULTS (active=0x10 persistent=0x00)
+OVERSPEED            cnt=0    active=no  persist=no 
+CRITICAL OVERHEAT    cnt=0    active=no  persist=no 
+INVALID_GEAR         cnt=0    active=no  persist=no 
+INVALID_MODE         cnt=0    active=no  persist=no 
+HIGH TEMPERATURE     cnt=1    active=YES persist=no 
+--------------------------------------------------
+[INFO]  Quit sentinel received — shutting down.

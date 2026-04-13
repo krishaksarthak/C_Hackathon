@@ -1,0 +1,35 @@
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+
+[CYCLE: 1]
+[INPUT] Mode=IGNITION_ON  Speed=130  Temp=115  Gear=9
+[FAULT] MODE  : ILLEGAL transition OFF -> IGNITION_ON => forcing FAULT mode
+[FAULT] CRITICAL OVERHEAT    : CRITICAL OVERHEAT
+[FAULT] INVALID_GEAR         : Gear value out of range
+[FAULT] OVERSPEED            : Speed 130 km/h exceeds limit 120 km/h [MAJOR]
+[STATE] SYSTEM : NORMAL -> DEGRADED | Reason: active fault(s) present
+-----
+[FAULT REPORT] 4 fault(s) active this cycle (listed highest -> lowest priority)
+[PRIMARY FAULT] CRITICAL OVERHEAT    [CRITICAL]
+[FAULT]         INVALID_MODE         [MAJOR]
+[FAULT]         INVALID_GEAR         [MAJOR]
+[FAULT]         OVERSPEED            [MAJOR]
+❇️  ECU CYCLE #1     SUMMARY
+-----
+INPUTS
+Speed       :  130 km/h [OK ]
+Temperature :  115 deg C [OK ]
+Gear        :    9       [ERR]
+Mode Req.   : IGNITION_ON  [OK ]
+-----
+STATUS
+Mode        : FAULT       
+Sys State   : DEGRADED  
+-----
+FAULTS (active=0x0F persistent=0x00)
+OVERSPEED            cnt=1    active=YES persist=no 
+CRITICAL OVERHEAT    cnt=1    active=YES persist=no 
+INVALID_GEAR         cnt=1    active=YES persist=no 
+INVALID_MODE         cnt=1    active=YES persist=no 
+HIGH TEMPERATURE     cnt=0    active=no  persist=no 
+--------------------------------------------------
+[INFO]  Quit sentinel received — shutting down.

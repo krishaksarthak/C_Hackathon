@@ -4,9 +4,6 @@
 #include "state.h"
 #include "fault.h"
 
-/*
- * This allows all functions in this file to write to logs/logs.txt
- */
 extern FILE *log_file;
 
 /* ── Priority table ─────────────────────────────────────────────────────────
@@ -18,40 +15,42 @@ extern FILE *log_file;
  * Priority  Fault                      Classification
  * --------  -------------------------  --------------
  *   1       Critical Overheat          CRITICAL
- *   2       Invalid Mode / Gear        MAJOR
+ *   2       Invalid Mode               MAJOR
+ *   2       Invalid Gear               MAJOR
  *   3       Overspeed                  MAJOR
  *   4       High Temperature           WARNING
- *
- * Note: "Critical Overheat" and "High Temperature" both map to
- *       FAULT_BIT_OVERTEMP.  The distinction is made by the temperature
- *       value, not by a separate bit, so OVERTEMP appears once in the
- *       priority list; its sub-classification is determined at runtime.
  * ────────────────────────────────────────────────────────────────────────── */
 
-/* Priority order used when emitting sorted fault list */
 static const FaultBit fault_priority_order[FAULT_BIT_COUNT] = {
-    FAULT_BIT_OVERTEMP,      /* P1: Critical Overheat / High Temp  */
-    FAULT_BIT_INVALID_MODE,  /* P2: Invalid Mode                   */
-    FAULT_BIT_INVALID_GEAR,  /* P2: Invalid Gear                   */
-    FAULT_BIT_OVERSPEED,     /* P3: Overspeed (major, not critical) */
+    FAULT_BIT_OVERTEMP,     /* P1: Critical Overheat — CRITICAL */
+    FAULT_BIT_INVALID_MODE, /* P2: Invalid Mode      — MAJOR    */
+    FAULT_BIT_INVALID_GEAR, /* P2: Invalid Gear      — MAJOR    */
+    FAULT_BIT_OVERSPEED,    /* P3: Overspeed         — MAJOR    */
+    FAULT_BIT_HIGH_TEMP,    /* P4: High Temperature  — WARNING  */
 };
 
 /*
- * Returns a human-readable classification label for a fault bit,
- * using temperature to distinguish critical overheat from high-temp warning.
+ * Returns a human-readable classification label for a fault bit.
+ * Each bit now maps to exactly one severity — no runtime temperature
+ * check needed since FAULT_BIT_OVERTEMP and FAULT_BIT_HIGH_TEMP are
+ * separate bits.
  */
-static const char *fault_classification(FaultBit bit, const VehicleInput *input)
+static const char *fault_classification(FaultBit bit)
 {
     switch (bit)
     {
-        case FAULT_BIT_OVERTEMP:
-            if (input && input->temperature > TEMP_CRITICAL_THRESHOLD)
-                return "CRITICAL";
-            return "WARNING";
-        case FAULT_BIT_OVERSPEED:    return "MAJOR";
-        case FAULT_BIT_INVALID_GEAR: return "MAJOR";
-        case FAULT_BIT_INVALID_MODE: return "MAJOR";
-        default:                     return "UNKNOWN";
+    case FAULT_BIT_OVERTEMP:
+        return "CRITICAL";
+    case FAULT_BIT_OVERSPEED:
+        return "MAJOR";
+    case FAULT_BIT_INVALID_GEAR:
+        return "MAJOR";
+    case FAULT_BIT_INVALID_MODE:
+        return "MAJOR";
+    case FAULT_BIT_HIGH_TEMP:
+        return "WARNING";
+    default:
+        return "UNKNOWN";
     }
 }
 
@@ -66,16 +65,19 @@ void log_faults_prioritised(const FaultStatus *faults, const VehicleInput *input
 {
     int i;
     int active_count = count_active_faults(faults);
-    int primary_idx  = -1;
+    int primary_idx = -1;
 
-    if (active_count == 0) return;
+    (void)input;
 
-    /* [FAULT REPORT] header goes to log file only — not stdout */
+    if (active_count == 0)
+        return;
+
     if (log_file)
-        fprintf(log_file, "[FAULT REPORT] %d fault(s) active this cycle "
-                          "(listed highest -> lowest priority)\n", active_count);
+    fprintf(log_file, "-----\n[FAULT REPORT] %d fault(s) active this cycle "
+                      "(listed highest -> lowest priority)\n",
+            active_count);
 
-    /* Find the highest-priority active fault index */
+    // Find the highest-priority active fault index
     for (i = 0; i < FAULT_BIT_COUNT; i++)
     {
         if (is_fault_active(faults, fault_priority_order[i]))
@@ -94,32 +96,23 @@ void log_faults_prioritised(const FaultStatus *faults, const VehicleInput *input
     for (i = 0; i < FAULT_BIT_COUNT; i++)
     {
         FaultBit bit = fault_priority_order[i];
-        if (!is_fault_active(faults, bit)) continue;
+        if (!is_fault_active(faults, bit))
+            continue;
 
-        const char *cls    = fault_classification(bit, input);
-        int         is_pri = (active_count > 1 && i == primary_idx);
-        const char *tag    = is_pri ? "[PRIMARY FAULT]" : "[FAULT]        ";
+        const char *name = fault_to_string(bit);
+        const char *cls = fault_classification(bit);
+        int is_pri = (active_count > 1 && i == primary_idx);
 
         if (log_file)
-            fprintf(log_file, "%s %-16s [%s]\n",
-                    tag, fault_to_string(bit), cls);
+            fprintf(log_file, "%s %-20s [%s]\n",
+                    is_pri ? "[PRIMARY FAULT]" : "[FAULT]        ",
+                    name, cls);
         printf("%s %s [%s]\n",
                is_pri ? "[PRIMARY FAULT]" : "[FAULT]",
-               fault_to_string(bit), cls);
+               name, cls);
     }
 }
 
-/* ── Structured cycle header ────────────────────────────────────────────── */
-
-/*
- * print_cycle_header()
- *
- * Prints the structured [CYCLE / INPUT] summary to stdout matching the
- * expected output format shown in the requirements:
- *
- *   [CYCLE: N]
- *   [INPUT] Mode=IGNITION_ON Speed=130 Temp=115 Gear=4
- */
 void print_cycle_header(uint32_t cycle, const VehicleInput *input)
 {
     printf("\n[CYCLE: %u]\n", cycle);
@@ -141,12 +134,12 @@ void print_cycle_header(uint32_t cycle, const VehicleInput *input)
     }
 }
 
-/* ── Existing log functions (unchanged) ─────────────────────────────────── */
 
 void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status,
                        const FaultStatus *faults)
 {
-    if (!log_file) return;
+    if (!log_file)
+        return;
 
     int i;
 
@@ -177,13 +170,12 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status,
     {
         FaultBit bit = (FaultBit)i;
 
-        // cnt is total lifetime occurrences of that fault since the program started.
-
+        /* cnt is total lifetime occurrences of that fault since program start */
         fprintf(log_file,
-                "%-16s cnt=%-4u active=%-3s persist=%-3s\n",
+                "%-20s cnt=%-4u active=%-3s persist=%-3s\n",
                 fault_to_string(bit),
                 faults->counters[i],
-                is_fault_active(faults, bit)     ? "YES" : "no ",
+                is_fault_active(faults, bit) ? "YES" : "no ",
                 is_fault_persistent(faults, bit) ? "YES" : "no ");
     }
 
@@ -191,6 +183,7 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status,
             "--------------------------------------------------\n");
     fflush(log_file);
 }
+
 
 void log_input_warning(const char *field, int value)
 {
@@ -202,7 +195,8 @@ void log_input_warning(const char *field, int value)
 
 void log_mode_transition(VehicleMode from, VehicleMode to, int is_illegal)
 {
-    if (!log_file) return;
+    if (!log_file)
+        return;
     if (is_illegal)
     {
         fprintf(log_file,
@@ -236,7 +230,7 @@ void log_fault_event(FaultBit bit, const char *detail)
 {
     if (log_file)
         fprintf(log_file,
-                "[FAULT] %-16s : %s\n",
+                "[FAULT] %-20s : %s\n",
                 fault_to_string(bit), detail);
 }
 

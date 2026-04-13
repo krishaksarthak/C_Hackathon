@@ -41,19 +41,19 @@ typedef enum
 // Each value here is a bit position, not a value itself. This enum describes where each fault lives inside a 32-bit integer.
 typedef enum
 {
-    FAULT_BIT_OVERSPEED = 0,
-    FAULT_BIT_OVERTEMP = 1,
+    FAULT_BIT_OVERSPEED    = 0,
+    FAULT_BIT_OVERTEMP     = 1,   /* Critical Overheat (temp > 110) */
     FAULT_BIT_INVALID_GEAR = 2,
     FAULT_BIT_INVALID_MODE = 3,
-    FAULT_BIT_COUNT = 4
+    FAULT_BIT_HIGH_TEMP    = 4,   /* High Temperature  (temp >  95) */
+    FAULT_BIT_COUNT        = 5
 } FaultBit;
 
-// 1U << N means shift the number 1 left by N positions, So each fault gets its own unique bit in a 32-bit integer. The entire fault state of the vehicle fits in one integer
-#define FAULT_OVERSPEED (1U << FAULT_BIT_OVERSPEED)       // 0b0001
-#define FAULT_OVERTEMP (1U << FAULT_BIT_OVERTEMP)         // 0b0010
-#define FAULT_INVALID_GEAR (1U << FAULT_BIT_INVALID_GEAR) // 0b0100
-#define FAULT_INVALID_MODE (1U << FAULT_BIT_INVALID_MODE) // 0b1000
-
+#define FAULT_OVERSPEED     (1U << FAULT_BIT_OVERSPEED)     // 0b00001
+#define FAULT_OVERTEMP      (1U << FAULT_BIT_OVERTEMP)      // 0b00010
+#define FAULT_INVALID_GEAR  (1U << FAULT_BIT_INVALID_GEAR)  // 0b00100
+#define FAULT_INVALID_MODE  (1U << FAULT_BIT_INVALID_MODE)  // 0b01000
+#define FAULT_HIGH_TEMP     (1U << FAULT_BIT_HIGH_TEMP)     // 0b10000
 // active_flags = 0b0101 = FAULT_OVERSPEED + FAULT_INVALID_GEAR both are active
 
 // VehicleInput holds all raw and validated sensor readings for one cycle.
