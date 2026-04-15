@@ -22,14 +22,14 @@ void read_inputs(VehicleInput *input)
 
     printf("\n");
 
-    if (!read_int("  Mode  (0=OFF 1=ACC 2=IGN 3=FAULT, -1 to quit): ", &mode_raw)) goto fail;
+    if (!read_int("  Mode  (0=OFF 1=ACC 2=IGN 3=FAULT, -1 to reset, -2 to quit): ", &mode_raw)) goto fail;
 
-    if (mode_raw == -1)
+    if (mode_raw == -1 || mode_raw == -2)
     {
-        input->requested_mode = (VehicleMode)-1;
-        input->speed          = -1;
-        input->temperature    = -1;
-        input->gear           = -1;
+        input->requested_mode = (VehicleMode)mode_raw;
+        input->speed          = 0;
+        input->temperature    = 0;
+        input->gear           = 0;
         return;
     }
 

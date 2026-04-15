@@ -1,0 +1,26 @@
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+[INFO]  User-initiated reset (-1 sentinel) — re-initialising.
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+[WARN]  read_inputs: failed to read field, preserving previous values
+
+[CYCLE: 1]
+[INPUT] Mode=OFF          Speed=0    Temp=20   Gear=0
+❇️  ECU CYCLE #1     SUMMARY
+-----
+INPUTS
+Speed       :    0 km/h [OK ]
+Temperature :   20 deg C [OK ]
+Gear        :    0       [OK ]
+Mode Req.   : OFF          [OK ]
+-----
+STATUS
+Mode        : OFF         
+Sys State   : NORMAL    
+-----
+FAULTS (active=0x00 persistent=0x00)
+OVERSPEED            cnt=0    active=no  persist=no 
+CRITICAL OVERHEAT    cnt=0    active=no  persist=no 
+INVALID_GEAR         cnt=0    active=no  persist=no 
+INVALID_MODE         cnt=0    active=no  persist=no 
+HIGH TEMPERATURE     cnt=0    active=no  persist=no 
+--------------------------------------------------

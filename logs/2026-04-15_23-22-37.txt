@@ -1,0 +1,2 @@
+[INFO]  System initialised — Mode: OFF, State: NORMAL
+[INFO]  Quit sentinel (-2) received. Exiting.

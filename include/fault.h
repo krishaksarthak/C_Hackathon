@@ -8,6 +8,8 @@ void clear_fault(FaultStatus *faults, FaultBit bit);
 void increment_fault_counter(FaultStatus *faults, FaultBit bit);
 void update_fault_status(FaultStatus *faults);
 
+FaultSeverity get_fault_severity(FaultBit bit);
+
 // Helper and status check functions
 const char *fault_to_string(FaultBit bit);
 int is_fault_active(const FaultStatus *faults, FaultBit bit);

@@ -19,23 +19,24 @@
 #define TEMP_HIGH_THRESHOLD 95
 
 // The fault must occur in 3 consecutive cycles before it's considered persistent.
-#define PERSISTENT_FAULT_LIMIT 3
+#define PERSISTENT_FAULT_LIMIT      3U // Given that it must occur 2 consecutive cycles not 3
+#define MAJOR_FAULT_SAFE_THRESHOLD  2U
 
 typedef enum
 {
     MODE_OFF = 0,
-    MODE_ACC,
-    MODE_IGNITION_ON,
-    MODE_FAULT,
-    MODE_COUNT // This is always equals the total number of valid modes.
+    MODE_ACC = 1,
+    MODE_IGNITION_ON = 2,
+    MODE_FAULT = 3,
+    MODE_COUNT = 4 // This is always equals the total number of valid modes.
 } VehicleMode;
 
 // Three states representing overall vehicle health.
 typedef enum
 {
     STATE_NORMAL = 0,
-    STATE_DEGRADED,
-    STATE_SAFE
+    STATE_DEGRADED = 1,
+    STATE_SAFE = 2
 } SystemState;
 
 // Each value here is a bit position, not a value itself. This enum describes where each fault lives inside a 32-bit integer.
@@ -49,11 +50,17 @@ typedef enum
     FAULT_BIT_COUNT        = 5
 } FaultBit;
 
-#define FAULT_OVERSPEED     (1U << FAULT_BIT_OVERSPEED)     // 0b00001
-#define FAULT_OVERTEMP      (1U << FAULT_BIT_OVERTEMP)      // 0b00010
-#define FAULT_INVALID_GEAR  (1U << FAULT_BIT_INVALID_GEAR)  // 0b00100
-#define FAULT_INVALID_MODE  (1U << FAULT_BIT_INVALID_MODE)  // 0b01000
-#define FAULT_HIGH_TEMP     (1U << FAULT_BIT_HIGH_TEMP)     // 0b10000
+typedef enum
+{
+    FAULT_SEVERITY_MAJOR    = 0,  /* stay in mode, DEGRADED → SAFE on threshold */
+    FAULT_SEVERITY_CRITICAL = 1   /* force MODE_FAULT, immediate STATE_SAFE      */
+} FaultSeverity;
+
+#define FAULT_OVERSPEED     (1U << (uint32_t)FAULT_BIT_OVERSPEED)     // 0b00001
+#define FAULT_OVERTEMP      (1U << (uint32_t)FAULT_BIT_OVERTEMP)      // 0b00010
+#define FAULT_INVALID_GEAR  (1U << (uint32_t)FAULT_BIT_INVALID_GEAR)  // 0b00100
+#define FAULT_INVALID_MODE  (1U << (uint32_t)FAULT_BIT_INVALID_MODE)  // 0b01000
+#define FAULT_HIGH_TEMP     (1U << (uint32_t)FAULT_BIT_HIGH_TEMP)     // 0b10000
 // active_flags = 0b0101 = FAULT_OVERSPEED + FAULT_INVALID_GEAR both are active
 
 // VehicleInput holds all raw and validated sensor readings for one cycle.
@@ -83,6 +90,9 @@ typedef struct
     int16_t last_valid_speed;
     int16_t last_valid_temp;
     int8_t last_valid_gear;
+
+    // This flag indicates whether the system needs to be reset due to a critical fault. It can be used to trigger a safe shutdown or restart procedure.
+    uint8_t  reset_required;
 } VehicleStatus;
 
 // This struct manages all fault information
