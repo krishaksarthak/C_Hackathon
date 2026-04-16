@@ -6,35 +6,23 @@
 
 extern FILE *log_file;
 
-/* ── Priority table ─────────────────────────────────────────────────────────
- *
- * When multiple faults fire in the same cycle they are reported in this
- * descending priority order.  The highest-priority active fault is also
- * marked as [PRIMARY FAULT].
- *
- * Priority  Fault                      Classification
- * --------  -------------------------  --------------
- *   1       Critical Overheat          CRITICAL
- *   2       Invalid Mode               MAJOR
- *   2       Invalid Gear               MAJOR
- *   3       Overspeed                  MAJOR
- *   4       High Temperature           WARNING
- * ────────────────────────────────────────────────────────────────────────── */
+// Priority table
+// Priority  Fault                      Classification
+// --------  -------------------------  --------------
+//   1       Critical Overheat          CRITICAL
+//   2       Invalid Mode               MAJOR
+//   2       Invalid Gear               MAJOR
+//   3       Overspeed                  MAJOR
+//   4       High Temperature           WARNING
 
 static const FaultBit fault_priority_order[FAULT_BIT_COUNT] = {
-    FAULT_BIT_OVERTEMP,     /* P1: Critical Overheat — CRITICAL */
-    FAULT_BIT_INVALID_MODE, /* P2: Invalid Mode      — MAJOR    */
-    FAULT_BIT_INVALID_GEAR, /* P2: Invalid Gear      — MAJOR    */
-    FAULT_BIT_OVERSPEED,    /* P3: Overspeed         — MAJOR    */
-    FAULT_BIT_HIGH_TEMP,    /* P4: High Temperature  — WARNING  */
+    FAULT_BIT_OVERTEMP,
+    FAULT_BIT_INVALID_MODE,
+    FAULT_BIT_INVALID_GEAR,
+    FAULT_BIT_OVERSPEED,
+    FAULT_BIT_HIGH_TEMP,
 };
 
-/*
- * Returns a human-readable classification label for a fault bit.
- * Each bit now maps to exactly one severity — no runtime temperature
- * check needed since FAULT_BIT_OVERTEMP and FAULT_BIT_HIGH_TEMP are
- * separate bits.
- */
 static const char *fault_classification(FaultBit bit)
 {
     switch (bit)
@@ -54,13 +42,6 @@ static const char *fault_classification(FaultBit bit)
     }
 }
 
-/*
- * log_faults_prioritised()
- *
- * Logs every active fault in descending priority order.
- * The first active fault found (highest priority) is tagged [PRIMARY FAULT].
- * If only one fault is active no [PRIMARY FAULT] tag is emitted (redundant).
- */
 void log_faults_prioritised(const FaultStatus *faults, const VehicleInput *input)
 {
     int i;
@@ -74,10 +55,9 @@ void log_faults_prioritised(const FaultStatus *faults, const VehicleInput *input
 
     if (log_file)
     fprintf(log_file, "-----\n[FAULT REPORT] %d fault(s) active this cycle "
-                      "(listed highest -> lowest priority)\n",
-            active_count);
+                      "(listed highest -> lowest priority)\n", active_count);
 
-    // Find the highest-priority active fault index
+    // Finds the highest-priority active fault index
     for (i = 0; i < FAULT_BIT_COUNT; i++)
     {
         if (is_fault_active(faults, fault_priority_order[i]))
@@ -87,12 +67,6 @@ void log_faults_prioritised(const FaultStatus *faults, const VehicleInput *input
         }
     }
 
-    /*
-     * Print all active faults in priority order.
-     * The highest-priority fault is tagged [PRIMARY FAULT] (shown once).
-     * Remaining faults are tagged [FAULT].
-     * When only one fault is active, it is shown as [FAULT] (no primary tag needed).
-     */
     for (i = 0; i < FAULT_BIT_COUNT; i++)
     {
         FaultBit bit = fault_priority_order[i];
@@ -135,15 +109,14 @@ void print_cycle_header(uint32_t cycle, const VehicleInput *input)
 }
 
 
-void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status,
-                       const FaultStatus *faults)
+void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status, const FaultStatus *faults)
 {
     if (!log_file)
         return;
 
     int i;
 
-    fprintf(log_file, "❇️  ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
+    fprintf(log_file, "  ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
     fprintf(log_file, "-----\n");
     fprintf(log_file, "INPUTS\n");
     fprintf(log_file, "Speed       : %4d km/h [%s]\n",
@@ -170,7 +143,7 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status,
     {
         FaultBit bit = (FaultBit)i;
 
-        /* cnt is total lifetime occurrences of that fault since program start */
+        // cnt is the lifetime of  faults
         fprintf(log_file,
                 "%-20s cnt=%-4u active=%-3s persist=%-3s\n",
                 fault_to_string(bit),

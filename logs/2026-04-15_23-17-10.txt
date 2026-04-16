@@ -1,4 +1,0 @@
-[INFO]  System initialised — Mode: OFF, State: NORMAL
-[INFO]  User-initiated reset (-1 sentinel) — re-initialising.
-[INFO]  System initialised — Mode: OFF, State: NORMAL
-[INFO]  Quit sentinel (-2) received. Exiting.
