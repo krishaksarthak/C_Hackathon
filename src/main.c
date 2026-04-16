@@ -26,7 +26,7 @@
 #include "state.h"
 #include "log.h"
 
-// File handler
+// Global File handler
 FILE *log_file = NULL;
 
 // Resets the input values
