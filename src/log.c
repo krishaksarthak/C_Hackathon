@@ -119,9 +119,9 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status, c
     fprintf(log_file, "  ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
     fprintf(log_file, "-----\n");
     fprintf(log_file, "INPUTS\n");
-    fprintf(log_file, "Speed       : %4d km/h [%s]\n",
+    fprintf(log_file, "Speed       : %4d mph [%s]\n",
             input->speed, input->speed_valid ? "OK " : "ERR");
-    fprintf(log_file, "Temperature : %4d deg C [%s]\n",
+    fprintf(log_file, "Temperature : %4d F [%s]\n",
             input->temperature, input->temp_valid ? "OK " : "ERR");
     fprintf(log_file, "Gear        : %4d       [%s]\n",
             input->gear, input->gear_valid ? "OK " : "ERR");
