@@ -116,7 +116,7 @@ void log_cycle_summary(const VehicleInput *input, const VehicleStatus *status, c
 
     int i;
 
-    fprintf(log_file, "  ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
+    fprintf(log_file, "🟢 ECU CYCLE #%-5u SUMMARY\n", status->cycle_count);
     fprintf(log_file, "-----\n");
     fprintf(log_file, "INPUTS\n");
     fprintf(log_file, "Speed       : %4d mph [%s]\n",
